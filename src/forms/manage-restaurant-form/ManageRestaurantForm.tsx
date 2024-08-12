@@ -5,6 +5,10 @@ import { z } from "zod";
 import DetailsSection from "./DetailsSection";
 import { Separator } from "@/components/ui/separator";
 import CuisinesSection from "./CuisinesSection";
+import MenuSection from "./MenuSection";
+import ImageSection from "./ImageSection";
+import LoadingButton from "@/components/LoadingButton";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   restaurantName: z.string({ required_error: "Restaurant name is required" }),
@@ -23,17 +27,14 @@ const formSchema = z.object({
     .nonempty({ message: "please select at least one cuisine" }),
   menuItems: z.array(
     z.object({
-      name: z.string({ required_error: "name is required" }),
-      price: z.coerce.number({
-        required_error: "price is required",
-        invalid_type_error: "price must be a number",
-      }),
+      name: z.string().min(1, "name is required"),
+      price: z.coerce.number().min(1, "price is required"),
     })
   ),
   imageFile: z.instanceof(File, { message: "image is required" }),
 });
 
-type restaurantFormData = z.infer<typeof formSchema>;
+type RestaurantFormData = z.infer<typeof formSchema>;
 
 type Props = {
   onSave: (restaurantFormData: FormData) => void;
@@ -41,7 +42,7 @@ type Props = {
 };
 
 const ManageRestaurantForm = ({ onSave, isLoading }: Props) => {
-  const form = useForm<restaurantFormData>({
+  const form = useForm<RestaurantFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cuisines: [],
@@ -49,8 +50,32 @@ const ManageRestaurantForm = ({ onSave, isLoading }: Props) => {
     },
   });
 
-  const onSubmit = (formJsonData: restaurantFormData) => {
-    // create a new FormData object
+  const onSubmit = (formJsonData: RestaurantFormData) => {
+    const formData = new FormData();
+    formData.append("restaurantName", formJsonData.restaurantName);
+    formData.append("city", formJsonData.city);
+    formData.append("country", formJsonData.country);
+    formData.append(
+      "deliveryPrice",
+      (formJsonData.deliveryPrice * 100).toString()
+    );
+    formData.append(
+      "estimatedDeliveryTime",
+      formJsonData.estimatedDeliveryTime.toString()
+    );
+    formJsonData.cuisines.forEach((cuisine, index) =>
+      formData.append(`cuisines[${index}]`, cuisine)
+    );
+    formJsonData.menuItems.forEach((menuItem, index) => {
+      formData.append(`menuItems[${index}][name]`, menuItem.name);
+      formData.append(
+        `menuItems[${index}][price]`,
+        (menuItem.price * 100).toString()
+      );
+    });
+    formData.append("imageFile", formJsonData.imageFile);
+
+    onSave(formData);
   };
 
   return (
@@ -62,6 +87,11 @@ const ManageRestaurantForm = ({ onSave, isLoading }: Props) => {
         <DetailsSection />
         <Separator />
         <CuisinesSection />
+        <Separator />
+        <MenuSection />
+        <Separator />
+        <ImageSection />
+        {isLoading ? <LoadingButton /> : <Button type="submit">Submit</Button>}
       </form>
     </Form>
   );
