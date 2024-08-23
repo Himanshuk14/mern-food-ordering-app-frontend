@@ -1,10 +1,11 @@
 import { useGetRestaurant } from "@/api/RestaurantApi";
+import RestaurantInfo from "@/components/RestaurantInfo";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useParams } from "react-router-dom";
 
 const DetailPage = () => {
   const { restaurantId } = useParams();
-  console.log(restaurantId);
+
   const { restaurant, isLoading } = useGetRestaurant(restaurantId);
   if (isLoading || !restaurant) {
     return <div>Loading...</div>;
@@ -18,6 +19,11 @@ const DetailPage = () => {
           alt="restaurant"
         />
       </AspectRatio>
+      <div className="grid md:grid-cols-[4fr_2fr] gap-5 md:px-32">
+        <div className="flex flex-col gap-4">
+          <RestaurantInfo restaurant={restaurant} />
+        </div>
+      </div>
     </div>
   );
 };
