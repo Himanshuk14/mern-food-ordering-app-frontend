@@ -52,9 +52,19 @@ const DetailPage = () => {
     });
   };
 
+  const removeFromCart = (menuItem: MenuItem) => {
+    setCartItems((prevCartItems) => {
+      const updatedCartItems = prevCartItems.filter(
+        (item) => item._id !== menuItem._id
+      );
+      return updatedCartItems;
+    });
+  };
+
   if (isLoading || !restaurant) {
     return <div>Loading...</div>;
   }
+
   return (
     <div className="flex flex-col gap-10">
       <AspectRatio ratio={16 / 5}>
@@ -77,7 +87,11 @@ const DetailPage = () => {
         </div>
         <div>
           <Card>
-            <OrderSummary restaurant={restaurant} cardItems={cartItems} />
+            <OrderSummary
+              restaurant={restaurant}
+              cardItems={cartItems}
+              removeFromCart={removeFromCart}
+            />
           </Card>
         </div>
       </div>
