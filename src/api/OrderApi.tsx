@@ -20,7 +20,9 @@ export const useGetMyOrders = () => {
     return response.json();
   };
 
-  const { data: orders, isLoading } = useQuery("myOrders", getMyOrdersRequest);
+  const { data: orders, isLoading } = useQuery("myOrders", getMyOrdersRequest, {
+    refetchInterval: 5000,
+  });
   return { orders, isLoading };
 };
 type CheckoutSessionRequest = {
